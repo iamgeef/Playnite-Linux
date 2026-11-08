@@ -1,0 +1,13 @@
+{
+  "type": "catalog.snapshot",
+  "protocolVersion": 1,
+  "messageId": "39ca2685-8e7a-4f4c-8887-bd0f04d5c021",
+  "sentAt": "2026-10-02T05:00:01Z",
+  "games": [
+    {
+      "gameId": "29a5daa9-f6d6-4c68-8f9b-7e2b670ba3c3",
+      "name": "Example Game",
+      "source": "steam"
+    }
+  ]
+}

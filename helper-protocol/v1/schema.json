@@ -1,0 +1,170 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:playnite-helper:protocol:v1",
+  "title": "Playnite Helper Protocol v1",
+  "description": "Messages exchanged between the hosted service and a paired local game helper.",
+  "oneOf": [
+    { "$ref": "#/$defs/helperHello" },
+    { "$ref": "#/$defs/catalogSnapshot" },
+    { "$ref": "#/$defs/launchRequest" },
+    { "$ref": "#/$defs/launchResult" }
+  ],
+  "$defs": {
+    "uuid": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "helperHello": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "protocolVersion",
+        "messageId",
+        "helperVersion",
+        "platform",
+        "capabilities",
+        "sentAt"
+      ],
+      "properties": {
+        "type": { "const": "helper.hello" },
+        "protocolVersion": { "const": 1 },
+        "messageId": { "$ref": "#/$defs/uuid" },
+        "helperVersion": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(-[0-9A-Za-z.-]+)?$"
+        },
+        "platform": {
+          "enum": ["linux", "windows", "macos"]
+        },
+        "capabilities": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": ["steam", "heroic", "lutris", "emulator", "custom"]
+          }
+        },
+        "sentAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "catalogSnapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "protocolVersion", "messageId", "sentAt", "games"],
+      "properties": {
+        "type": { "const": "catalog.snapshot" },
+        "protocolVersion": { "const": 1 },
+        "messageId": { "$ref": "#/$defs/uuid" },
+        "sentAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "games": {
+          "type": "array",
+          "maxItems": 2000,
+          "items": { "$ref": "#/$defs/catalogGame" }
+        }
+      }
+    },
+    "catalogGame": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["gameId", "name", "source"],
+      "properties": {
+        "gameId": { "$ref": "#/$defs/uuid" },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "source": {
+          "enum": ["steam", "heroic", "lutris", "emulator", "custom"]
+        },
+        "steamAppId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4294967295
+        }
+      }
+    },
+    "launchRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "protocolVersion",
+        "requestId",
+        "gameId",
+        "issuedAt",
+        "expiresAt"
+      ],
+      "properties": {
+        "type": { "const": "launch.request" },
+        "protocolVersion": { "const": 1 },
+        "requestId": { "$ref": "#/$defs/uuid" },
+        "gameId": { "$ref": "#/$defs/uuid" },
+        "issuedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "launchResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "protocolVersion",
+        "requestId",
+        "gameId",
+        "status",
+        "completedAt"
+      ],
+      "properties": {
+        "type": { "const": "launch.result" },
+        "protocolVersion": { "const": 1 },
+        "requestId": { "$ref": "#/$defs/uuid" },
+        "gameId": { "$ref": "#/$defs/uuid" },
+        "status": {
+          "enum": ["started", "failed"]
+        },
+        "errorCode": {
+          "enum": [
+            "game_not_found",
+            "unsupported_launch_type",
+            "launch_failed"
+          ]
+        },
+        "completedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": { "const": "failed" }
+            },
+            "required": ["status"]
+          },
+          "then": {
+            "required": ["errorCode"]
+          },
+          "else": {
+            "not": {
+              "required": ["errorCode"]
+            }
+          }
+        }
+      ]
+    }
+  }
+}

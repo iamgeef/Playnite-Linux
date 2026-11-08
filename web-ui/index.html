@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101318">
+  <title>Paused</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #101318;
+      --surface: #191e26;
+      --surface-raised: #202733;
+      --line: #2c3440;
+      --muted: #9aa5b4;
+      --text: #f2f4f8;
+      --accent: #67a5ff;
+      --green: #69d49a;
+      --red: #ff7777;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.45 Inter, ui-sans-serif, system-ui, sans-serif; }
+    button, input { font: inherit; }
+    button { color: inherit; }
+    .topbar { position: sticky; top: 0; z-index: 5; height: 68px; padding: 0 max(24px, calc((100vw - 1440px) / 2)); display: flex; align-items: center; gap: 28px; background: rgb(16 19 24 / 94%); border-bottom: 1px solid var(--line); backdrop-filter: blur(16px); }
+    .brand { display: flex; align-items: center; gap: 11px; min-width: 220px; font-weight: 750; letter-spacing: -.03em; }
+    .brand-mark { width: 32px; height: 32px; display: grid; place-items: center; border-radius: 10px; color: #101318; background: var(--accent); font-size: 19px; font-weight: 900; }
+    .nav-spacer { flex: 1; }
+    .device-menu { position: relative; }
+    .device-button, .button { border: 1px solid var(--line); background: var(--surface); border-radius: 9px; padding: 9px 13px; cursor: pointer; transition: background .16s, border-color .16s; }
+    .device-button:hover, .button:hover { background: var(--surface-raised); border-color: #465364; }
+    .device-button { display: flex; align-items: center; gap: 9px; }
+    .device-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--red); box-shadow: 0 0 10px currentColor; }
+    .device-dot.online { background: var(--green); }
+    .device-popover { display: none; position: absolute; right: 0; top: calc(100% + 12px); width: min(380px, calc(100vw - 32px)); padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: #1a2029; box-shadow: 0 18px 50px #0009; }
+    .device-popover.open { display: block; }
+    .popover-title { padding: 3px 5px 10px; color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .1em; }
+    .device-row { padding: 11px 6px; border-top: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .device-name { font-weight: 650; }
+    .device-meta { color: var(--muted); font-size: 12px; }
+    .button.small { padding: 5px 9px; font-size: 12px; }
+    .button.primary { color: #08111e; border-color: transparent; background: var(--accent); font-weight: 700; }
+    .button.primary:hover { background: #83b6ff; }
+    .button.danger { color: #ff9c9c; }
+    main { max-width: 1440px; margin: 0 auto; padding: 42px 28px 80px; }
+    .intro { display: flex; align-items: end; justify-content: space-between; gap: 24px; margin-bottom: 28px; }
+    h1 { margin: 0; font-size: clamp(30px, 4vw, 42px); line-height: 1.1; letter-spacing: -.045em; }
+    .subtitle { color: var(--muted); margin-top: 8px; }
+    .toolbar { display: flex; align-items: center; gap: 10px; }
+    .search { width: min(320px, 42vw); padding: 10px 13px; border: 1px solid var(--line); outline: 0; border-radius: 9px; color: var(--text); background: var(--surface); }
+    .search:focus { border-color: var(--accent); }
+    .notice { margin-bottom: 24px; padding: 15px 17px; background: #182233; border: 1px solid #2a4264; border-radius: 11px; color: #cadcf5; }
+    .notice strong { color: white; }
+    .notice code { color: #a9cfff; overflow-wrap: anywhere; }
+    .notice a { color: var(--accent); }
+    .notice.error { background: #291b1d; border-color: #633238; color: #ffd1d1; }
+    .count { color: var(--muted); margin: 0 0 14px; font-size: 13px; }
+    .library-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: 22px 16px; }
+    .game-card { min-width: 0; border: 1px solid transparent; border-radius: 11px; overflow: hidden; background: var(--surface); transition: transform .18s, border-color .18s, box-shadow .18s; }
+    .game-card:hover { transform: translateY(-3px); border-color: #435166; box-shadow: 0 12px 30px #0005; }
+    .cover { aspect-ratio: 2 / 3; position: relative; background: linear-gradient(145deg, #27354a, #171c24 70%); overflow: hidden; }
+    .cover img { width: 100%; height: 100%; display: block; object-fit: cover; }
+    .cover-fallback { height: 100%; padding: 18px; display: grid; place-items: center; text-align: center; font-size: 22px; font-weight: 750; letter-spacing: -.03em; }
+    .cover-shade { position: absolute; inset: 45% 0 0; pointer-events: none; background: linear-gradient(transparent, #0b0e13c9); }
+    .cover-badge { position: absolute; top: 9px; left: 9px; padding: 4px 7px; border-radius: 6px; background: #101318d9; font-size: 10px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }
+    .game-info { padding: 11px 11px 12px; }
+    .game-name { min-height: 40px; overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; font-size: 13px; font-weight: 650; }
+    .game-source { margin: 3px 0 9px; color: var(--muted); font-size: 11px; text-transform: capitalize; }
+    .game-actions { display: flex; align-items: center; gap: 7px; }
+    .game-actions button { flex: 1; }
+    .playtime { color: var(--muted); font-size: 10px; white-space: nowrap; }
+    .button.launch { width: 100%; padding: 7px 9px; border-radius: 7px; }
+    .button.launch:disabled { cursor: default; color: #89919c; background: #272d36; border-color: transparent; opacity: 1; }
+    .launch-result { min-height: 17px; margin-top: 5px; font-size: 11px; color: var(--muted); }
+    .launch-result.ok { color: var(--green); }
+    .launch-result.fail { color: var(--red); }
+    .empty { padding: 70px 20px; text-align: center; color: var(--muted); border: 1px dashed var(--line); border-radius: 14px; }
+    .empty strong { display: block; margin-bottom: 6px; color: var(--text); font-size: 17px; }
+    @media (max-width: 700px) {
+      .topbar { height: 58px; padding: 0 14px; gap: 10px; }
+      .brand { min-width: auto; }
+      .brand-label { display: none; }
+      main { padding: 28px 15px 50px; }
+      .intro { align-items: stretch; flex-direction: column; gap: 16px; }
+      .toolbar { width: 100%; }
+      .search { width: 100%; flex: 1; }
+      .library-grid { grid-template-columns: repeat(auto-fill, minmax(138px, 1fr)); gap: 14px 10px; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="topbar">
+    <div class="brand"><span class="brand-mark">P</span><span class="brand-label">Paused</span></div>
+    <div class="nav-spacer"></div>
+    <div class="device-menu">
+      <button class="device-button" id="device-toggle" aria-expanded="false">
+        <span class="device-dot" id="device-dot"></span><span id="device-summary">Checking devices</span><span aria-hidden="true">⌄</span>
+      </button>
+      <div class="device-popover" id="device-popover">
+        <div class="popover-title">Paired devices</div>
+        <div id="device-list"></div>
+        <button class="button small" id="pair-device">Pair another device</button>
+      </div>
+    </div>
+  </nav>
+  <main>
+    <div class="intro">
+      <div><h1>My games</h1><div class="subtitle">Your Steam library and games available on paired devices.</div></div>
+      <div class="toolbar">
+        <input class="search" id="search" type="search" placeholder="Search your library..." aria-label="Search games">
+        <button class="button" id="refresh-library" title="Refresh Steam library">Refresh</button>
+      </div>
+    </div>
+    <div id="steam-setup" class="notice" hidden></div>
+    <div id="steam-error" class="notice error" hidden></div>
+    <p class="count" id="game-count">Loading library...</p>
+    <div id="library" class="library-grid"></div>
+    <div id="empty-library" class="empty" hidden><strong>No games found</strong>Configure Steam Web API access or connect a helper with discovered games.</div>
+  </main>
+<script>
+const gamesById = new Map();
+const devicesById = new Map();
+const renderedCards = new Map();
+let steamConfigured = false;
+
+async function api(path, options) {
+  const response = await fetch(path, options);
+  const body = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const error = new Error(body.message || body.error || ("request_failed_" + response.status));
+    error.body = body;
+    throw error;
+  }
+  return body;
+}
+
+function setNotice(element, message) {
+  element.textContent = message;
+  element.hidden = !message;
+}
+
+function deviceListFor(gameId) {
+  return [...devicesById.values()].filter((device) =>
+    !device.revoked && (device.games || []).some((game) => game.gameId === gameId));
+}
+
+function launchableDevices(gameId) {
+  return deviceListFor(gameId).filter((device) => device.connected);
+}
+
+function makeCard(game) {
+  const card = document.createElement("article");
+  card.className = "game-card";
+  card.dataset.gameId = game.gameId;
+
+  const cover = document.createElement("div");
+  cover.className = "cover";
+  const fallback = document.createElement("div");
+  fallback.className = "cover-fallback";
+  fallback.textContent = game.name;
+  cover.appendChild(fallback);
+
+  if (game.coverUrl) {
+    const image = document.createElement("img");
+    image.loading = "lazy";
+    image.alt = game.name + " cover";
+    image.src = game.coverUrl;
+    image.addEventListener("error", () => {
+      if (game.headerUrl && image.src !== game.headerUrl) {
+        image.src = game.headerUrl;
+        image.style.objectFit = "cover";
+      } else {
+        image.remove();
+      }
+    });
+    image.addEventListener("load", () => fallback.remove());
+    cover.appendChild(image);
+  }
+
+  const badge = document.createElement("span");
+  badge.className = "cover-badge";
+  badge.textContent = game.source === "steam" ? "Steam" : game.source;
+  cover.appendChild(badge);
+  cover.appendChild(Object.assign(document.createElement("span"), { className: "cover-shade" }));
+
+  const info = document.createElement("div");
+  info.className = "game-info";
+  const name = document.createElement("div");
+  name.className = "game-name";
+  name.textContent = game.name;
+  const source = document.createElement("div");
+  source.className = "game-source";
+  source.textContent = game.source === "steam" && game.playtimeMinutes
+    ? Math.floor(game.playtimeMinutes / 60) + " hrs played"
+    : game.source;
+  const actions = document.createElement("div");
+  actions.className = "game-actions";
+  const launch = document.createElement("button");
+  launch.className = "button primary launch";
+  const result = document.createElement("div");
+  result.className = "launch-result";
+  launch.addEventListener("click", async () => {
+    const targets = launchableDevices(game.gameId);
+    if (!targets.length) return;
+    launch.disabled = true;
+    result.className = "launch-result";
+    result.textContent = "Starting...";
+    try {
+      const { result: launchResult } = await api("/api/devices/" + targets[0].deviceId + "/launch", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ gameId: game.gameId })
+      });
+      result.textContent = launchResult.status === "started" ? "Launched" : "Failed: " + launchResult.errorCode;
+      result.className = "launch-result " + (launchResult.status === "started" ? "ok" : "fail");
+    } catch (error) {
+      result.textContent = error.message;
+      result.className = "launch-result fail";
+    } finally {
+      updateCardState(game.gameId);
+    }
+  });
+  actions.appendChild(launch);
+  info.append(name, source, actions, result);
+  card.append(cover, info);
+  return card;
+}
+
+function updateCardState(gameId) {
+  const card = renderedCards.get(gameId);
+  const game = gamesById.get(gameId);
+  if (!card || !game) return;
+  const button = card.querySelector(".launch");
+  const targets = launchableDevices(gameId);
+  const installed = deviceListFor(gameId).length > 0;
+  button.disabled = targets.length === 0;
+  button.textContent = targets.length ? "Play" : installed ? "Helper offline" : "Not installed";
+  button.classList.toggle("primary", targets.length > 0);
+  const source = card.querySelector(".game-source");
+  if (game.source === "steam" && game.playtimeMinutes) {
+    source.textContent = Math.floor(game.playtimeMinutes / 60) + " hrs played" + (installed ? " · Installed" : "");
+  } else {
+    source.textContent = game.source + (installed ? " · Installed" : "");
+  }
+}
+
+function renderLibrary() {
+  const container = document.getElementById("library");
+  const query = document.getElementById("search").value.trim().toLocaleLowerCase();
+  const sorted = [...gamesById.values()].sort((a, b) => a.name.localeCompare(b.name));
+  const activeIds = new Set(sorted.map((game) => game.gameId));
+
+  for (const game of sorted) {
+    let card = renderedCards.get(game.gameId);
+    const signature = JSON.stringify(game);
+    if (!card || card.dataset.signature !== signature) {
+      const replacement = makeCard(game);
+      replacement.dataset.signature = signature;
+      if (card) card.replaceWith(replacement);
+      else container.appendChild(replacement);
+      renderedCards.set(game.gameId, replacement);
+      card = replacement;
+    }
+    card.hidden = query !== "" && !game.name.toLocaleLowerCase().includes(query);
+    updateCardState(game.gameId);
+  }
+
+  for (const [gameId, card] of renderedCards) {
+    if (!activeIds.has(gameId)) {
+      card.remove();
+      renderedCards.delete(gameId);
+    }
+  }
+  const steamCount = sorted.filter((game) => game.source === "steam" && game.appId).length;
+  document.getElementById("game-count").textContent = steamConfigured
+    ? sorted.length + " games · " + steamCount + " owned on Steam"
+    : sorted.length + " games found on paired devices";
+  document.getElementById("empty-library").hidden = sorted.length !== 0;
+}
+
+function updateDeviceMenu(devices) {
+  const connected = devices.filter((device) => device.connected && !device.revoked).length;
+  document.getElementById("device-summary").textContent = connected + " of " + devices.filter((device) => !device.revoked).length + " devices online";
+  document.getElementById("device-dot").classList.toggle("online", connected > 0);
+  const signature = JSON.stringify(devices.map(({ deviceId, platform, connected, revoked, catalogSize }) =>
+    ({ deviceId, platform, connected, revoked, catalogSize })));
+  if (signature === updateDeviceMenu.lastSignature) return;
+  updateDeviceMenu.lastSignature = signature;
+  const list = document.getElementById("device-list");
+  list.replaceChildren();
+  if (!devices.length) {
+    const empty = document.createElement("div");
+    empty.className = "device-row device-meta";
+    empty.textContent = "No paired devices";
+    list.appendChild(empty);
+  }
+  for (const device of devices) {
+    const row = document.createElement("div");
+    row.className = "device-row";
+    const details = document.createElement("div");
+    const title = document.createElement("div");
+    title.className = "device-name";
+    title.textContent = (device.platform || "Helper") + " · " + device.deviceId.slice(0, 8);
+    const meta = document.createElement("div");
+    meta.className = "device-meta";
+    meta.textContent = device.revoked ? "Revoked" : (device.connected ? "Connected" : "Offline") + " · " + device.catalogSize + " games";
+    details.append(title, meta);
+    row.appendChild(details);
+    if (!device.revoked) {
+      const revoke = document.createElement("button");
+      revoke.className = "button small danger";
+      revoke.textContent = "Revoke";
+      revoke.addEventListener("click", async () => {
+        if (confirm("Revoke this device? It will be disconnected immediately.")) {
+          await api("/api/devices/" + device.deviceId + "/revoke", { method: "POST" });
+          await refreshDevices();
+        }
+      });
+      row.appendChild(revoke);
+    }
+    list.appendChild(row);
+  }
+}
+
+async function refreshDevices() {
+  const { devices } = await api("/api/devices");
+  const catalogs = await Promise.all(devices.map((device) =>
+    api("/api/devices/" + device.deviceId + "/catalog")));
+  const nextDevices = new Map(devices.map((device, index) => {
+    device.games = catalogs[index].games || [];
+    return [device.deviceId, device];
+  }));
+  devicesById.clear();
+  for (const [id, device] of nextDevices) devicesById.set(id, device);
+
+  for (const game of [...gamesById.values()]) {
+    if (game.source !== "steam") gamesById.delete(game.gameId);
+  }
+  for (const device of devices) {
+    for (const game of device.games) {
+      if (gamesById.has(game.gameId)) continue;
+      const entry = { ...game };
+      if (entry.source === "steam" && entry.steamAppId) {
+        const base = `https://cdn.akamai.steamstatic.com/steam/apps/${entry.steamAppId}`;
+        entry.coverUrl = `${base}/library_600x900.jpg`;
+        entry.headerUrl = `${base}/header.jpg`;
+      }
+      gamesById.set(game.gameId, entry);
+    }
+  }
+  updateDeviceMenu(devices);
+  renderLibrary();
+}
+
+async function refreshSteamLibrary(force = false) {
+  const error = document.getElementById("steam-error");
+  setNotice(error, "");
+  try {
+    const data = await api("/api/library/steam" + (force ? "?refresh=1" : ""));
+    steamConfigured = data.configured;
+    gamesById.clear();
+    for (const game of data.games) gamesById.set(game.gameId, game);
+    const setup = document.getElementById("steam-setup");
+    if (!data.configured) {
+      setup.replaceChildren();
+      setup.hidden = false;
+      const title = document.createElement("strong");
+      title.textContent = "Show your full Steam library";
+      const text = document.createElement("span");
+      text.append(" Set ");
+      const key = document.createElement("code");
+      key.textContent = "STEAM_WEB_API_KEY";
+      const id = document.createElement("code");
+      id.textContent = "STEAM_ID64";
+      text.append(key, " and ", id, " in the service environment, then restart it. The key stays on the server. Your Steam Game details must be public. ");
+      const help = document.createElement("a");
+      help.href = "https://steamcommunity.com/dev/apikey";
+      help.target = "_blank";
+      help.rel = "noreferrer";
+      help.textContent = "Get a Steam Web API key";
+      setup.replaceChildren(title, text, help);
+    } else {
+      setup.hidden = true;
+    }
+  } catch (requestError) {
+    setNotice(error, "Could not load Steam library: " + requestError.message + " — check your SteamID64, API key, and profile game-details privacy.");
+  }
+  await refreshDevices();
+}
+
+document.getElementById("device-toggle").addEventListener("click", () => {
+  const panel = document.getElementById("device-popover");
+  const isOpen = panel.classList.toggle("open");
+  document.getElementById("device-toggle").setAttribute("aria-expanded", String(isOpen));
+});
+document.getElementById("pair-device").addEventListener("click", async () => {
+  const { pairingCode, expiresAt } = await api("/api/pairing-codes", { method: "POST" });
+  alert("Pairing code " + pairingCode + " (expires " + new Date(expiresAt).toLocaleTimeString() + "). Run:\nnode linux-helper/src/cli.js pair " + location.origin + " " + pairingCode);
+});
+document.getElementById("search").addEventListener("input", renderLibrary);
+document.getElementById("refresh-library").addEventListener("click", () => refreshSteamLibrary(true));
+
+refreshSteamLibrary();
+setInterval(() => refreshDevices().catch((error) => console.error("Device refresh failed:", error)), 4000);
+</script>
+</body>
+</html>

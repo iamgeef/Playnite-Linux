@@ -1,0 +1,13 @@
+{
+  "name": "playnite-hosted-service-prototype",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Local prototype of the hosted library service that pairs with Linux/Windows/macOS helpers over an authenticated outbound WebSocket and relays bounded launch requests.",
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "type": "helper.hello",
+  "protocolVersion": 1,
+  "messageId": "6dd6cba0-1895-4d2e-b8c8-16b131dbb2ca",
+  "helperVersion": "0.1.0",
+  "platform": "linux",
+  "capabilities": ["steam", "lutris"],
+  "sentAt": "2026-10-02T05:00:00Z"
+}

@@ -1,0 +1,9 @@
+{
+  "type": "launch.result",
+  "protocolVersion": 1,
+  "requestId": "a4d32c03-cf86-41f8-88fb-bd83ad38fd80",
+  "gameId": "29a5daa9-f6d6-4c68-8f9b-7e2b670ba3c3",
+  "status": "failed",
+  "errorCode": "game_not_found",
+  "completedAt": "2026-10-02T05:00:02Z"
+}

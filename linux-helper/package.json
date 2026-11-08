@@ -1,0 +1,13 @@
+{
+  "name": "playnite-linux-helper-prototype",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Local prototype of the Linux helper: pairs with the hosted service and launches locally registered games on request.",
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/"
+  },
+  "devDependencies": {
+    "ws": "^8.18.0"
+  }
+}
